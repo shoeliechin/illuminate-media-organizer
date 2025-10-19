@@ -97,6 +97,7 @@ python media_searcher.py <search_directory> [options]
 *   `--month <month>` or `-m <month>`: Specify a single month or a range of months (e.g., `1`, `3-6`).
 *   `--keyword <keyword1> [<keyword2> ...]` or `-k <keyword1> [<keyword2> ...]`: Specify one or more keywords to search for in the directory path. The search is case-insensitive.
 *   `--keyword-match <any|all>`: Use with multiple keywords. `any` (default) will find files that match any of the keywords. `all` will find files that match all of the keywords in the path.
+*   `--rating <rating>` or `-r <rating>`: Specify a single rating or a range of ratings (e.g., `4`, `3-5`). Values must be between -1 and 5.
 *   `--open-dirs`: If specified, the script will open the directories containing the matched files in the default file explorer.
 
 ### Examples
@@ -135,6 +136,12 @@ python media_searcher.py /path/to/sorted/photos --keyword birthday vacation
 
 ```bash
 python media_searcher.py /path/to/sorted/photos --keyword vacation skiing --keyword-match all
+```
+
+#### Search by Rating
+
+```bash
+python media_searcher.py /path/to/sorted/photos --rating 4
 ```
 
 #### Search and Open Directories
