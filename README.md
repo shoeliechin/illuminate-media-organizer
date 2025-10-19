@@ -95,8 +95,8 @@ python media_searcher.py <search_directory> [options]
 
 *   `--year <year>` or `-y <year>`: Specify a single year or a range of years (e.g., `2022`, `2020-2023`).
 *   `--month <month>` or `-m <month>`: Specify a single month or a range of months (e.g., `1`, `3-6`).
-*   `--keyword <keyword1> [<keyword2> ...]` or `-k <keyword1> [<keyword2> ...]`: Specify one or more keywords to search for in the directory path. The search is case-insensitive.
-*   `--keyword-match <any|all>`: Use with multiple keywords. `any` (default) will find files that match any of the keywords. `all` will find files that match all of the keywords in the path.
+*   `--keyword <keyword1> [<keyword2> ...]` or `-k <keyword1> [<keyword2> ...]`: Specify one or more keywords to search for in the directory path or in the file's metadata keywords. The search is case-insensitive.
+*   `--keyword-match <any|all>`: Use with multiple keywords. `any` (default) will find files that match any of the keywords. `all` will find files that match all of the keywords in the path or metadata.
 *   `--rating <rating>` or `-r <rating>`: Specify a single rating or a range of ratings (e.g., `4`, `3-5`). Values must be between -1 and 5. Mutually exclusive with `--rejected` and `--picked`.
 *   `--rejected` or `-R`: Search for rejected files (rating of -1). Mutually exclusive with `--rating` and `--picked`.
 *   `--picked` or `-P`: Search for picked files (rating of 0-5). Mutually exclusive with `--rating` and `--rejected`.
