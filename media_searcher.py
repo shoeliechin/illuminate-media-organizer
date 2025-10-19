@@ -20,7 +20,7 @@ def parse_range(value):
     """Parses a range string (e.g., '2020-2023') into a list of integers."""
     if not value:
         return []
-    if '-' in value:
+    if '-' in value and value.count('-') == 1 and not value.startswith('-'):
         start, end = map(int, value.split('-'))
         return list(range(start, end + 1))
     else:
@@ -122,9 +122,25 @@ if __name__ == '__main__':
     parser.add_argument('--month', '-m', type=str, help='The month or month range to search for (e.g., 1, 3-6).')
     parser.add_argument('--keyword', '-k', type=str, nargs='+', help='One or more keywords or event names to search for. The search is case-insensitive.')
     parser.add_argument('--keyword-match', type=str, choices=['any', 'all'], default='any', help='How to match keywords: \'any\' (default) or \'all\'.')
-    parser.add_argument('--rating', '-r', type=str, help='The rating or rating range to search for (e.g., 4, 3-5). Values must be between -1 and 5.')
+    parser.add_argument('--rating', '-r', type=str, help='Search for a specific rating or range. Mutually exclusive with --rejected and --picked.')
+    parser.add_argument('--rejected', '-R', action='store_true', help='Search for rejected files (rating of -1). Mutually exclusive with --rating and --picked.')
+    parser.add_argument('--picked', '-P', action='store_true', help='Search for picked files (rating of 0-5). Mutually exclusive with --rating and --rejected.')
     parser.add_argument('--open-dirs', action='store_true', help='Open the directories containing the matched files in the file explorer.')
 
     args = parser.parse_args()
 
-    search_media(args.search_dir, args.year, args.month, args.keyword, args.keyword_match, args.rating, args.open_dirs)
+    if args.rejected and args.picked:
+        print("Warning: --rejected and --picked flags should not be used together. This combination is redundant.")
+        sys.exit(1)
+
+    if args.rating and (args.rejected or args.picked):
+        print("Warning: --rating should not be used with --rejected or --picked. Provide either a rating or a status flag.")
+        sys.exit(1)
+
+    rating_str = args.rating
+    if args.rejected:
+        rating_str = '-1'
+    elif args.picked:
+        rating_str = '0-5'
+
+    search_media(args.search_dir, args.year, args.month, args.keyword, args.keyword_match, rating_str, args.open_dirs)
