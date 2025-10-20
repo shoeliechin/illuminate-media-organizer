@@ -6,62 +6,12 @@ import threading
 import subprocess
 import sys
 import os
-from pathlib import Path
 
-def is_exiftool_installed():
-    """Check if exiftool is installed and available in the system's PATH."""
-    try:
-        subprocess.run(['exiftool', '-ver'], check=True, capture_output=True, text=True)
-        return True
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        return False
-
-def get_pictures_directory():
-    """Get the user's Pictures directory across different platforms."""
-    try:
-        if sys.platform == 'win32':
-            # Windows: Use USERPROFILE\Pictures
-            import winreg
-            try:
-                # Try to get the actual Pictures folder from registry
-                key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
-                    r"Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders")
-                pictures_path = winreg.QueryValueEx(key, "My Pictures")[0]
-                winreg.CloseKey(key)
-                if os.path.exists(pictures_path):
-                    return pictures_path
-            except:
-                pass
-            # Fallback to standard location
-            pictures = Path.home() / "Pictures"
-
-        elif sys.platform == 'darwin':
-            # macOS: ~/Pictures
-            pictures = Path.home() / "Pictures"
-
-        else:
-            # Linux and other Unix-like systems
-            # Try XDG user directories first
-            try:
-                result = subprocess.run(['xdg-user-dir', 'PICTURES'],
-                                      capture_output=True, text=True, check=True)
-                pictures_path = result.stdout.strip()
-                if os.path.exists(pictures_path):
-                    return pictures_path
-            except:
-                pass
-            # Fallback to standard location
-            pictures = Path.home() / "Pictures"
-
-        # Return the path if it exists, otherwise return home directory
-        if pictures.exists():
-            return str(pictures)
-        else:
-            return str(Path.home())
-
-    except Exception:
-        # Ultimate fallback to home directory
-        return str(Path.home())
+# Handle imports whether run as module or script
+try:
+    from media_utils import is_exiftool_installed, get_pictures_directory
+except ImportError:
+    from src.media_utils import is_exiftool_installed, get_pictures_directory
 
 class MediaOrganizerGUI:
     def __init__(self, root):
@@ -93,8 +43,25 @@ class MediaOrganizerGUI:
         self.setup_sorter_tab()
         self.setup_searcher_tab()
 
+        # Single exiftool check for both tabs (optimization)
+        self.check_exiftool_status()
+
         # Set up window close protocol
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+    def check_exiftool_status(self):
+        """Check exiftool installation once and update both tab statuses."""
+        if is_exiftool_installed():
+            self.sorter_status_text.set("✓ Ready")
+            self.sorter_status_display.config(foreground="green")
+            self.searcher_status_text.set("✓ Ready")
+            self.searcher_status_display.config(foreground="green")
+        else:
+            error_msg = "Error: ExifTool not installed properly"
+            self.sorter_status_text.set(error_msg)
+            self.sorter_status_display.config(foreground="red")
+            self.searcher_status_text.set(error_msg)
+            self.searcher_status_display.config(foreground="red")
 
     def setup_sorter_tab(self):
         main_frame = ttk.Frame(self.sorter_frame)
@@ -154,13 +121,9 @@ class MediaOrganizerGUI:
         )
         self.sorter_status_display.pack(fill='x')
 
-        # Set initial status based on exiftool availability
-        if is_exiftool_installed():
-            self.sorter_status_text.set("✓ Ready")
-            self.sorter_status_display.config(foreground="green")
-        else:
-            self.sorter_status_text.set("Error: ExifTool not installed properly")
-            self.sorter_status_display.config(foreground="gray")
+        # Status will be set after initial check in __init__
+        self.sorter_status_text.set("Checking ExifTool...")
+        self.sorter_status_display.config(foreground="gray")
 
         # Run button - centered
         button_frame = ttk.Frame(main_frame)
@@ -281,13 +244,9 @@ class MediaOrganizerGUI:
         )
         self.searcher_status_display.pack(fill='x')
 
-        # Set initial status based on exiftool availability
-        if is_exiftool_installed():
-            self.searcher_status_text.set("✓ Ready")
-            self.searcher_status_display.config(foreground="green")
-        else:
-            self.searcher_status_text.set("Error: ExifTool not installed properly")
-            self.searcher_status_display.config(foreground="gray")
+        # Status will be set after initial check in __init__
+        self.searcher_status_text.set("Checking ExifTool...")
+        self.searcher_status_display.config(foreground="gray")
 
         # Run button - centered
         button_frame = ttk.Frame(main_frame)
@@ -515,7 +474,10 @@ class MediaOrganizerGUI:
             messagebox.showerror("Error", "Please select both source and destination directories")
             return
 
-        command = [sys.executable, "media_sorter.py", self.source_var.get(), self.dest_var.get()]
+        # Get the path to media_sorter.py (same directory as this file)
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        sorter_path = os.path.join(script_dir, "media_sorter.py")
+        command = [sys.executable, sorter_path, self.source_var.get(), self.dest_var.get()]
 
         if self.copy_var.get():
             command.append("--copy")
@@ -531,7 +493,10 @@ class MediaOrganizerGUI:
             messagebox.showerror("Error", "Please select a search directory")
             return
 
-        command = [sys.executable, "media_searcher.py", self.search_dir_var.get()]
+        # Get the path to media_searcher.py (same directory as this file)
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        searcher_path = os.path.join(script_dir, "media_searcher.py")
+        command = [sys.executable, searcher_path, self.search_dir_var.get()]
 
         if self.year_var.get():
             command.extend(["--year", self.year_var.get()])

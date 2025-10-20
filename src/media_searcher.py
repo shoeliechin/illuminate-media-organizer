@@ -1,30 +1,15 @@
+#!/usr/bin/env python3
+
 import os
 import argparse
 import sys
 import subprocess
-from datetime import datetime
 
-def open_directory(path):
-    """Opens a directory in the default file explorer, cross-platform."""
-    if sys.platform == 'win32':
-        os.startfile(path)
-    elif sys.platform == 'darwin':
-        subprocess.run(['open', path])
-    else: # Linux and other Unix-like OS
-        try:
-            subprocess.run(['xdg-open', path])
-        except FileNotFoundError:
-            print(f"Error: xdg-open is not available. Could not open directory {path}")
-
-def parse_range(value):
-    """Parses a range string (e.g., '2020-2023') into a list of integers."""
-    if not value:
-        return []
-    if '-' in value and value.count('-') == 1 and not value.startswith('-'):
-        start, end = map(int, value.split('-'))
-        return list(range(start, end + 1))
-    else:
-        return [int(value)]
+# Handle imports whether run as module or script
+try:
+    from media_utils import open_directory, parse_range
+except ImportError:
+    from src.media_utils import open_directory, parse_range
 
 def validate_rating(value):
     """Validates that a rating value is an integer between -1 and 5."""
@@ -41,6 +26,8 @@ def search_media(search_dir, year_str=None, month_str=None, keywords=None, keywo
     """
     Searches for media files in a directory structure based on year, month, keywords (in path and metadata), and rating.
     The keyword search is case-insensitive.
+
+    Optimized version with improved filtering logic and better performance.
     """
     years_to_search = parse_range(year_str)
     months_to_search = parse_range(month_str)
@@ -50,9 +37,21 @@ def search_media(search_dir, year_str=None, month_str=None, keywords=None, keywo
             validate_rating(r)
 
     found_files = []
-    
+
+    print(f"Searching in: {search_dir}")
+    if years_to_search:
+        print(f"Year filter: {years_to_search}")
+    if months_to_search:
+        print(f"Month filter: {months_to_search}")
+    if keywords:
+        print(f"Keyword filter: {keywords} (match: {keyword_match})")
+    if ratings_to_search:
+        print(f"Rating filter: {ratings_to_search}")
+
     # First, filter by directory structure (year, month, and keyword in path)
     preliminary_files = []
+    skipped_dirs = 0
+
     for root, dirs, files in os.walk(search_dir):
         path_parts = root.split(os.sep)
         current_year, current_month = None, None
@@ -62,20 +61,31 @@ def search_media(search_dir, year_str=None, month_str=None, keywords=None, keywo
             if len(part) == 2 and part.isdigit() and 1 <= int(part) <= 12:
                 current_month = int(part)
 
-        if (years_to_search and current_year not in years_to_search) or \
-           (months_to_search and current_month not in months_to_search):
+        # Early directory filtering - skip entire directories if they don't match
+        if years_to_search and current_year and current_year not in years_to_search:
+            dirs[:] = []  # Don't recurse into subdirectories
+            skipped_dirs += 1
+            continue
+
+        if months_to_search and current_month and current_month not in months_to_search:
+            dirs[:] = []  # Don't recurse into subdirectories
+            skipped_dirs += 1
             continue
 
         path_lower = root.lower()
-        if keywords and keyword_match == 'any' and not any(k.lower() in path_lower for k in keywords):
-            pass # Don't skip yet, as keyword might be in metadata
-        elif keywords and keyword_match == 'all' and not all(k.lower() in path_lower for k in keywords):
-            continue
+        # For 'all' keyword match in path, skip directories that don't contain all keywords
+        if keywords and keyword_match == 'all' and not all(k.lower() in path_lower for k in keywords):
+            # Check if any files in this directory might still match via metadata
+            # For now, we'll still include them but this is a conservative approach
+            pass
 
         for filename in files:
             # Skip hidden files (files starting with .)
             if not filename.startswith('.'):
                 preliminary_files.append(os.path.join(root, filename))
+
+    if skipped_dirs > 0:
+        print(f"Skipped {skipped_dirs} directories based on year/month filters.")
 
     # Now, filter by metadata (rating and keywords)
     if ratings_to_search or keywords:
