@@ -73,7 +73,9 @@ def search_media(search_dir, year_str=None, month_str=None, keywords=None, keywo
             continue
 
         for filename in files:
-            preliminary_files.append(os.path.join(root, filename))
+            # Skip hidden files (files starting with .)
+            if not filename.startswith('.'):
+                preliminary_files.append(os.path.join(root, filename))
 
     # Now, filter by metadata (rating and keywords)
     if ratings_to_search or keywords:
@@ -120,9 +122,20 @@ def search_media(search_dir, year_str=None, month_str=None, keywords=None, keywo
             print(f"  - {f}")
 
         if open_dirs:
-            unique_dirs = set(os.path.dirname(f) for f in found_files)
+            # Get directories that directly contain matched files
+            dirs_with_files = set(os.path.dirname(f) for f in found_files)
+
+            # Filter out directories that only contain subdirectories with matches
+            # but no actual matched files themselves
+            dirs_to_open = set()
+            for directory in dirs_with_files:
+                # Check if this directory directly contains any matched files
+                has_direct_files = any(os.path.dirname(f) == directory for f in found_files)
+                if has_direct_files:
+                    dirs_to_open.add(directory)
+
             print("\nOpening directories containing matched files...")
-            for directory in unique_dirs:
+            for directory in sorted(dirs_to_open):
                 print(f"  - Opening: {directory}")
                 open_directory(directory)
     else:
