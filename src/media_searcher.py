@@ -1,4 +1,22 @@
 #!/usr/bin/env python3
+"""
+Media Searcher - Find media files by date, keywords, and ratings.
+
+Copyright (C) 2025  Shiue-Lang Chin
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
 
 import os
 import argparse
@@ -8,8 +26,10 @@ import subprocess
 # Handle imports whether run as module or script
 try:
     from media_utils import open_directory, parse_range
+    from __version__ import __version__
 except ImportError:
     from src.media_utils import open_directory, parse_range
+    from src.__version__ import __version__
 
 def validate_rating(value):
     """Validates that a rating value is an integer between -1 and 5."""
@@ -151,8 +171,13 @@ def search_media(search_dir, year_str=None, month_str=None, keywords=None, keywo
     else:
         print("No files found matching the criteria.")
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Search for media files in a sorted directory.")
+
+def main():
+    """Main entry point for the media searcher command-line interface."""
+    parser = argparse.ArgumentParser(
+        description="Search for media files in a sorted directory.",
+        epilog=f"Media Organizer v{__version__}"
+    )
     parser.add_argument('search_dir', type=str, help='The directory to search in.')
     parser.add_argument('--year', '-y', type=str, help='The year or year range to search for (e.g., 2022, 2020-2023).')
     parser.add_argument('--month', '-m', type=str, help='The month or month range to search for (e.g., 1, 3-6).')
@@ -162,6 +187,7 @@ if __name__ == '__main__':
     parser.add_argument('--rejected', '-R', action='store_true', help='Search for rejected files (rating of -1). Mutually exclusive with --rating and --picked.')
     parser.add_argument('--picked', '-P', action='store_true', help='Search for picked files (rating of 0-5). Mutually exclusive with --rating and --rejected.')
     parser.add_argument('--open-dirs', action='store_true', help='Open the directories containing the matched files in the file explorer.')
+    parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
 
     args = parser.parse_args()
 
@@ -180,3 +206,7 @@ if __name__ == '__main__':
         rating_str = '0-5'
 
     search_media(args.search_dir, args.year, args.month, args.keyword, args.keyword_match, rating_str, args.open_dirs)
+
+
+if __name__ == '__main__':
+    main()

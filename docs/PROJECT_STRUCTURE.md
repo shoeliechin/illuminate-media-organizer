@@ -8,9 +8,14 @@ This document describes the organization of the Media Organizer project.
 media_organizer_script_v1/
 ├── run_gui.py                 # Main launcher - start here!
 ├── README.md                  # Complete documentation
+├── LICENSE                    # GPLv3 license text
 ├── .gitignore                 # Git ignore rules
+├── pyproject.toml             # Modern Python packaging configuration
+├── requirements.txt           # Python dependencies (uses stdlib only)
 │
 ├── src/                       # All Python source code
+│   ├── __init__.py            # Package initialization
+│   ├── __version__.py         # Version and metadata
 │   ├── media_utils.py         # Shared utilities
 │   ├── media_sorter.py        # Sorting script
 │   ├── media_searcher.py      # Searching script
@@ -37,10 +42,22 @@ This launches the graphical interface which provides access to all functionality
 
 - **`run_gui.py`** - Simple launcher script that starts the GUI application. This is the recommended entry point for most users.
 - **`README.md`** - Complete project documentation with usage examples and troubleshooting.
+- **`LICENSE`** - GNU General Public License v3.0 full text.
+- **`.gitignore`** - Git ignore patterns for Python projects (excludes __pycache__, build artifacts, etc.).
+- **`pyproject.toml`** - Modern Python packaging configuration (PEP 517/518 compliant).
+- **`requirements.txt`** - Python dependencies list (this project uses only standard library).
 
 ### src/ Directory
 
 Contains all Python source code:
+
+- **`__init__.py`** - Makes src a proper Python package, exports version info.
+
+- **`__version__.py`** - Version and metadata constants:
+  - `__version__` - Current version (1.0.0)
+  - `__author__` - Project author
+  - `__license__` - License type (GPLv3)
+  - `__description__` - Package description
 
 - **`media_utils.py`** - Shared utility functions used by all scripts:
   - ExifTool detection
@@ -51,14 +68,17 @@ Contains all Python source code:
 - **`media_sorter.py`** - Command-line tool for organizing media files:
   - Sorts files into YYYY/MM folder structure
   - Can be run independently: `python3 src/media_sorter.py SOURCE DEST`
+  - Main entry point: `main()` function
 
 - **`media_searcher.py`** - Command-line tool for finding media files:
   - Search by year, month, keywords, or ratings
   - Can be run independently: `python3 src/media_searcher.py DIRECTORY [options]`
+  - Main entry point: `main()` function
 
 - **`media_organizer_gui.py`** - GUI application module:
   - Provides graphical interface for both sorter and searcher
   - Launched via `run_gui.py`
+  - Main entry point: `main()` function
 
 ### docs/ Directory
 
@@ -144,12 +164,56 @@ To add a new feature:
 4. Add tests (if you create a test suite)
 5. Update documentation in `README.md` and `docs/QUICK_REFERENCE.md`
 
+## Installation and Packaging
+
+### Using as a Python Package
+
+To install the package in development mode:
+
+```bash
+pip install -e .
+```
+
+This installs the package with the following command-line tools:
+- `media-sorter` - Runs the media sorter
+- `media-searcher` - Runs the media searcher
+- `media-organizer-gui` - Launches the GUI
+
+### Building a Distribution
+
+To build a wheel package:
+
+```bash
+pip install build
+python -m build
+```
+
+This creates distribution files in the `dist/` directory.
+
+### Installing from Source
+
+```bash
+git clone <repository-url>
+cd media_organizer_script_v1
+pip install .
+```
+
 ## Version Control
 
 The `.gitignore` file excludes:
 - `__pycache__/` - Python bytecode
-- `.venv/` - Virtual environments
+- `.venv/`, `venv/` - Virtual environments
+- `dist/`, `build/`, `*.egg-info/` - Build artifacts
+- `.pytest_cache/`, `.mypy_cache/` - Testing/linting cache
 - Test media files
 - Development artifacts
 
 See `.gitignore` for complete list.
+
+## License
+
+This project is licensed under the GNU General Public License v3.0 or later.
+
+Copyright (C) 2025  Shiue-Lang Chin
+
+All source files include the GPLv3 license header. See LICENSE for full license text.

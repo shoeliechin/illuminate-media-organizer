@@ -1,4 +1,22 @@
 #!/usr/bin/env python3
+"""
+Media Sorter - Organize media files by creation date into YYYY/MM structure.
+
+Copyright (C) 2025  Shiue-Lang Chin
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
 
 import os
 import shutil
@@ -8,8 +26,10 @@ from datetime import datetime
 # Handle imports whether run as module or script
 try:
     from media_utils import is_exiftool_installed, get_creation_dates_batch
+    from __version__ import __version__
 except ImportError:
     from src.media_utils import is_exiftool_installed, get_creation_dates_batch
+    from src.__version__ import __version__
         
 
 def sort_media_files(source_dir, dest_dir, copy_files=False, dry_run=False, fallback_to_file_time=None):
@@ -126,14 +146,23 @@ def sort_media_files(source_dir, dest_dir, copy_files=False, dry_run=False, fall
             print(f"  ... and {len(skipped_files) - 10} more")
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Sort media files using exiftool.")
+def main():
+    """Main entry point for the media sorter command-line interface."""
+    parser = argparse.ArgumentParser(
+        description="Sort media files using exiftool.",
+        epilog=f"Media Organizer v{__version__}"
+    )
     parser.add_argument('source_dir', type=str, help='The source directory with media files.')
     parser.add_argument('dest_dir', type=str, help='The destination directory for sorted files.')
     parser.add_argument('--copy', action='store_true', help='Copy files instead of moving them.')
     parser.add_argument('--dry-run', action='store_true', help='Simulate the process without moving/copying files.')
     parser.add_argument('--fallback-to-file-time', type=str, choices=['created', 'modified'], help='Use file creation or modification time if EXIF data is not available.')
-    
+    parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
+
     args = parser.parse_args()
 
     sort_media_files(args.source_dir, args.dest_dir, args.copy, args.dry_run, args.fallback_to_file_time)
+
+
+if __name__ == '__main__':
+    main()

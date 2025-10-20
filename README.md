@@ -344,6 +344,17 @@ sudo dnf install python3-tkinter
 
 See [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md) for details about how the project is organized.
 
+## License
+
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
+
+Copyright (C) 2025  Shiue-Lang Chin
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
 ## Additional Information
+
+**Version:** 1.0.0
+**Author:** Shiue-Lang Chin
 
 For more details about the scripts or to report issues, see the project repository.

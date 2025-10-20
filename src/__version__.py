@@ -1,7 +1,5 @@
-#!/usr/bin/env python3
 """
-Simple launcher for the Media Organizer GUI.
-Launches the GUI from the src/ folder.
+Version information for Media Organizer.
 
 Copyright (C) 2025  Shiue-Lang Chin
 
@@ -19,16 +17,16 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import sys
-import os
+__version__ = "1.0.0"
+__author__ = "Shiue-Lang Chin"
+__license__ = "GPLv3"
+__description__ = "Organize and search your media files by date, keywords, and ratings"
 
-# Add src directory to path
-script_dir = os.path.dirname(os.path.abspath(__file__))
-src_dir = os.path.join(script_dir, 'src')
-sys.path.insert(0, src_dir)
-
-# Import and run the GUI
-from media_organizer_gui import main
-
-if __name__ == "__main__":
-    main()
+# Version history:
+# 1.0.0 - Initial release
+#         - Media Sorter: Organize files by date into YYYY/MM structure
+#         - Media Searcher: Find files by date, keywords, and ratings
+#         - GUI application with both tools
+#         - Batch ExifTool processing for optimal performance
+#         - Professional project structure with src/ and docs/
+#         - Comprehensive documentation

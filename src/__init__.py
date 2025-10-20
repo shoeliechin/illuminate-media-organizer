@@ -1,7 +1,5 @@
-#!/usr/bin/env python3
 """
-Simple launcher for the Media Organizer GUI.
-Launches the GUI from the src/ folder.
+Media Organizer - A tool for organizing and searching media files.
 
 Copyright (C) 2025  Shiue-Lang Chin
 
@@ -19,16 +17,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import sys
-import os
+from .__version__ import __version__, __author__, __license__, __description__
 
-# Add src directory to path
-script_dir = os.path.dirname(os.path.abspath(__file__))
-src_dir = os.path.join(script_dir, 'src')
-sys.path.insert(0, src_dir)
-
-# Import and run the GUI
-from media_organizer_gui import main
-
-if __name__ == "__main__":
-    main()
+__all__ = ['__version__', '__author__', '__license__', '__description__']

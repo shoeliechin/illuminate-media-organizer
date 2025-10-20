@@ -1,0 +1,14 @@
+# Media Organizer Dependencies
+#
+# This project requires Python 3.8+ with tkinter support
+# External tool requirement: ExifTool (https://exiftool.org/)
+#
+# No additional Python packages are required - this project uses only
+# Python standard library modules:
+# - tkinter (for GUI)
+# - subprocess (for ExifTool calls)
+# - argparse (for CLI)
+# - datetime (for date handling)
+# - json (for ExifTool output parsing)
+# - shutil (for file operations)
+# - os, sys, pathlib (for file system operations)
