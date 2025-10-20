@@ -166,6 +166,72 @@ This will find all files from 2023 and open the parent directories of the matche
 python media_searcher.py /path/to/sorted/photos --year 2023 --open-dirs
 ```
 
+## Media Organizer GUI (`media_organizer_gui.py`)
+
+For users who prefer a graphical interface, this project includes a user-friendly GUI that provides access to both the Media Sorter and Media Searcher functionality without needing to use the command line.
+
+### Features
+
+*   **Tabbed Interface**: Separate tabs for Media Sorter and Media Searcher operations
+*   **Visual Controls**: Browse buttons, checkboxes, and input fields for all options
+*   **Real-time Output**: Live progress updates and results displayed in scrollable text areas
+*   **Cross-platform**: Built with tkinter (included with Python) and works on Windows, macOS, and Linux
+*   **Threaded Execution**: Operations run in background threads, keeping the interface responsive
+
+### Prerequisites
+
+The GUI has the same prerequisites as the command-line scripts:
+*   Python 3.x
+*   `exiftool` installed and accessible from the command line
+
+### How to Use
+
+#### Launch the GUI
+
+```bash
+python3 media_organizer_gui.py
+```
+
+Or use the launcher script:
+
+```bash
+python3 run_gui.py
+```
+
+#### Media Sorter Tab
+
+The Media Sorter tab provides a graphical interface for organizing your media files:
+
+*   **Directories**: Use the "Browse" buttons to select your source and destination directories
+*   **Options**:
+    *   **Copy files**: Check to copy files instead of moving them
+    *   **Dry run**: Check to simulate the process without making changes
+    *   **Fallback to file time**: Choose whether to use file creation or modification time when EXIF data is unavailable
+*   **Output**: Real-time progress and results are displayed in the output area
+
+#### Media Searcher Tab
+
+The Media Searcher tab provides a graphical interface for finding media files:
+
+*   **Search Directory**: Use the "Browse" button to select the directory to search in
+*   **Filters**:
+    *   **Year**: Enter a single year (e.g., `2022`) or year range (e.g., `2020-2023`)
+    *   **Month**: Enter a single month (e.g., `1`) or month range (e.g., `3-6`)
+    *   **Keywords**: Enter space-separated keywords to search for
+    *   **Keyword Match**: Choose "Any" to find files matching any keyword, or "All" to require all keywords
+    *   **Rating Filters**: Choose from no filter, specific rating/range, rejected files (-1), or picked files (0-5)
+*   **Options**:
+    *   **Open directories**: Check to automatically open directories containing matched files
+*   **Results**: Search results are displayed in real-time in the results area
+
+### Advantages of the GUI
+
+*   **Ease of Use**: No need to remember command-line syntax
+*   **Visual Feedback**: See exactly what options are selected
+*   **Error Prevention**: Form validation helps prevent common mistakes
+*   **Progress Monitoring**: Watch operations in real-time with live output
+*   **File Browser Integration**: Built-in directory browser eliminates typing file paths
+
 ## Troubleshooting
 
 ### "Could not process metadata"
