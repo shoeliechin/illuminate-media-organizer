@@ -1,360 +1,300 @@
 # Illuminate Media Organizer
 
-This project helps you organize and find your photos and videos using powerful command-line tools or an easy-to-use graphical interface.
+Organize and search your photos and videos using powerful command-line tools or an easy-to-use graphical interface.
 
-**⚡ New to this project?** Check out [docs/QUICK_REFERENCE.md](docs/QUICK_REFERENCE.md) for a quick start guide and common commands.
+**⚡ New here?** Check out the [Quick Reference Guide](docs/QUICK_REFERENCE.md) for common commands and examples.
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Tools](#tools)
+  - [Media Sorter](#media-sorter)
+  - [Media Searcher](#media-searcher)
+  - [GUI Application](#gui-application)
+- [Troubleshooting](#troubleshooting)
+- [License](#license)
+
+---
 
 ## Overview
 
-Illuminate Media Organizer includes three main tools:
+Illuminate Media Organizer provides three tools to help you manage your media library:
 
-1. **Media Sorter** (`src/media_sorter.py`) - Automatically organizes your media files into a clean YYYY/MM folder structure
-2. **Media Searcher** (`src/media_searcher.py`) - Quickly find files by date, keywords, or ratings
-3. **GUI Application** (`run_gui.py`) - User-friendly interface for both tools
+| Tool | Description | Command |
+|------|-------------|---------|
+| **Media Sorter** | Organize files into YYYY/MM folders by date | `python3 src/media_sorter.py` or `media-sorter` |
+| **Media Searcher** | Find files by date, keywords, or ratings | `python3 src/media_searcher.py` or `media-searcher` |
+| **GUI Application** | User-friendly interface for both tools | `python3 run_gui.py` or `media-organizer-gui` |
 
-## Quick Start
+---
 
-### Using the GUI (Recommended)
+## Installation
 
-Simply run:
-```bash
-python3 run_gui.py
-```
+### Requirements
 
-The GUI provides an easy-to-use interface for both sorting and searching your media files.
+- **Python 3.8+** with tkinter support (for GUI)
+- **ExifTool** - Download from [exiftool.org](https://exiftool.org/)
 
-## Media Sorter (`media_sorter.py`)
-
-This Python script helps you organize your photos and videos into a structured folder hierarchy based on their creation date. It uses the powerful command-line tool `exiftool` to read metadata from the files.
-
-The script will create folders in the format `YYYY/MM` (e.g., `2023/10`) in your specified destination directory.
-
-### Features
-
-*   **Sorts by Creation Date**: Organizes files based on their EXIF creation date.
-*   **YYYY/MM Folder Structure**: Creates a clean and intuitive folder structure.
-*   **Move or Copy**: Choose to either move the files to the new directory structure or create copies.
-*   **Dry Run Mode**: Simulate the sorting process to see what changes will be made without actually touching any files. This is highly recommended for the first run!
-*   **Filename Conflict Resolution**: Automatically renames files if a file with the same name already exists in the destination directory (e.g., `image_1.jpg`).
-*   **Fallback Options**: If EXIF data is not available, optionally use the file's creation or modification time as a fallback.
-*   **Fast Performance**: Optimized to process thousands of files quickly.
-
-### Prerequisites
-
-You must have `exiftool` installed on your system and accessible from your command line.
-
-*   **Website & Installation**: https://exiftool.org/
-
-To check if it's installed correctly, open a terminal or command prompt and run:
-
+Verify ExifTool is installed:
 ```bash
 exiftool -ver
 ```
 
-If it prints a version number, you're good to go.
-
-### How to Use
-
-1.  **Save the Script**: Save the `media_sorter.py` script to your computer.
-2.  **Open Terminal**: Open a terminal or command prompt and navigate to the directory where you saved the script.
-3.  **Run the Script**: Execute the script with the following command structure:
+### Install from Source
 
 ```bash
-python3 src/media_sorter.py <source_directory> <destination_directory> [options]
+# Clone the repository
+git clone https://github.com/shoeliechin/illuminate-media-organizer.git
+cd illuminate-media-organizer
+
+# Install as a package (optional - provides command-line tools)
+pip install -e .
 ```
 
-#### Arguments
+After installation, you can use:
+- `media-sorter` instead of `python3 src/media_sorter.py`
+- `media-searcher` instead of `python3 src/media_searcher.py`
+- `media-organizer-gui` instead of `python3 run_gui.py`
 
-*   `source_directory`: The path to the folder containing the media files you want to sort.
-*   `destination_directory`: The path to the folder where the sorted files will be placed.
+---
 
-#### Options
+## Quick Start
 
-*   `--copy`: Copy files instead of moving them. This is safer if you want to keep the original files untouched.
-*   `--dry-run`: Simulate the sorting process. The script will show what it would do, but no files will be moved or copied. **Recommended for first run!**
-*   `--fallback-to-file-time {created,modified}`: Use file creation or modification time when EXIF data is not available. Options are `created` or `modified`.
-
-### Examples
-
-#### Dry Run (Recommended First Step)
-
-This will show you which files will be moved where, without making any changes.
-
-```bash
-python3 src/media_sorter.py /path/to/your/photos /path/to/sorted/photos --dry-run
-```
-
-#### Move Files
-
-This will move all media from the source folder to the sorted destination folders.
-
-```bash
-python3 src/media_sorter.py /path/to/your/photos /path/to/sorted/photos
-```
-
-#### Copy Files
-
-This will copy the files, leaving your original folder intact.
-
-```bash
-python3 src/media_sorter.py /path/to/your/photos /path/to/sorted/photos --copy
-```
-
-#### Use Fallback for Files Without EXIF Data
-
-This will use the file modification time when EXIF data is not available.
-
-```bash
-python3 src/media_sorter.py /path/to/your/photos /path/to/sorted/photos --fallback-to-file-time modified
-```
-
-## Media Searcher (`media_searcher.py`)
-
-This script allows you to search for media files within the sorted directory structure created by the `media_sorter.py` script. Search by year, month, keywords, or ratings.
-
-### Features
-
-*   **Year & Month Filtering**: Search by specific years, months, or ranges
-*   **Keyword Search**: Find files by keywords in path or metadata (case-insensitive)
-*   **Rating Filters**: Search by star ratings or filter for accepted/rejected files
-*   **Smart Directory Opening**: Automatically opens folders containing matched files
-*   **Fast Performance**: Optimized to skip irrelevant directories and search efficiently
-
-### How to Use
-
-```bash
-python3 src/media_searcher.py <search_directory> [options]
-```
-
-#### Arguments
-
-*   `search_directory`: The path to the folder where your sorted media is located.
-
-#### Options
-
-*   `--year <year>` or `-y <year>`: Specify a single year or a range of years (e.g., `2022`, `2020-2023`).
-*   `--month <month>` or `-m <month>`: Specify a single month or a range of months (e.g., `1`, `3-6`).
-*   `--keyword <keyword1> [<keyword2> ...]` or `-k <keyword1> [<keyword2> ...]`: Specify one or more keywords to search for in the directory path or in the file's metadata keywords. The search is case-insensitive.
-*   `--keyword-match <any|all>`: Use with multiple keywords. `any` (default) will find files that match any of the keywords. `all` will find files that match all of the keywords in the path or metadata.
-*   `--rating <rating>` or `-r <rating>`: Specify a single rating or a range of ratings (e.g., `4`, `3-5`). Values must be between -1 and 5. Mutually exclusive with `--rejected` and `--picked`.
-*   `--rejected` or `-R`: Search for rejected files (rating of -1). Mutually exclusive with `--rating` and `--picked`.
-*   `--picked` or `-P`: Search for picked files (rating of 0-5). Mutually exclusive with `--rating` and `--rejected`.
-*   `--open-dirs`: If specified, the script will open the directories containing the matched files in the default file explorer.
-
-### Examples
-
-#### Search by Year
-
-```bash
-python3 src/media_searcher.py /path/to/sorted/photos --year 2023
-```
-
-#### Search by Year Range
-
-```bash
-python3 src/media_searcher.py /path/to/sorted/photos --year 2021-2023
-```
-
-#### Search by Month
-
-```bash
-python3 src/media_searcher.py /path/to/sorted/photos --year 2023 --month 3
-```
-
-#### Search by Month Range
-
-```bash
-python3 src/media_searcher.py /path/to/sorted/photos --year 2023 --month 6-8
-```
-
-#### Search by Keyword
-
-```bash
-python3 src/media_searcher.py /path/to/sorted/photos --keyword vacation
-```
-
-#### Search by Multiple Keywords (any match)
-
-Find files that contain ANY of the keywords:
-
-```bash
-python3 src/media_searcher.py /path/to/sorted/photos --keyword birthday vacation
-```
-
-#### Search by Multiple Keywords (all match)
-
-Find files that contain ALL of the keywords:
-
-```bash
-python3 src/media_searcher.py /path/to/sorted/photos --keyword vacation skiing --keyword-match all
-```
-
-#### Search by Rating
-
-```bash
-python3 src/media_searcher.py /path/to/sorted/photos --rating 4
-```
-
-#### Search by Rating Range
-
-```bash
-python3 src/media_searcher.py /path/to/sorted/photos --rating 3-5
-```
-
-#### Search for Rejected Files
-
-Find all files with a rating of -1:
-
-```bash
-python3 src/media_searcher.py /path/to/sorted/photos --rejected
-```
-
-#### Search for Picked Files
-
-Find all files with ratings 0-5 (accepted files):
-
-```bash
-python3 src/media_searcher.py /path/to/sorted/photos --picked
-```
-
-#### Search and Open Directories
-
-This will find all files from 2023 and automatically open the directories containing the matched files:
-
-```bash
-python3 src/media_searcher.py /path/to/sorted/photos --year 2023 --open-dirs
-```
-
-#### Combine Multiple Filters
-
-Find vacation photos from summer 2023 with high ratings:
-
-```bash
-python3 src/media_searcher.py /path/to/sorted/photos --year 2023 --month 6-8 --keyword vacation --rating 4-5 --open-dirs
-```
-
-## Media Organizer GUI (`media_organizer_gui.py`)
-
-For users who prefer a graphical interface, this project includes a user-friendly GUI that provides access to both the Media Sorter and Media Searcher functionality without needing to use the command line.
-
-### Features
-
-*   **Tabbed Interface**: Separate tabs for Media Sorter and Media Searcher operations
-*   **Visual Controls**: Browse buttons, checkboxes, and input fields for all options
-*   **Real-time Output**: Live progress updates and results displayed in expandable output areas
-*   **Cross-platform**: Works on Windows, macOS, and Linux
-*   **Threaded Execution**: Operations run in background threads, keeping the interface responsive
-*   **ExifTool Check**: Automatically checks if ExifTool is installed on startup
-
-### Prerequisites
-
-The GUI has the same prerequisites as the command-line scripts:
-*   Python 3.x
-*   `exiftool` installed and accessible from the command line
-
-### How to Use
-
-#### Launch the GUI
+### Option 1: GUI (Recommended for Beginners)
 
 ```bash
 python3 run_gui.py
 ```
 
-#### Media Sorter Tab
+The GUI provides an intuitive interface with visual controls for all features.
 
-The Media Sorter tab provides a graphical interface for organizing your media files:
+### Option 2: Command Line
 
-1. **Select Directories**: Use the "Browse" buttons to select your source and destination directories
-2. **Choose Options**:
-   - **Copy files**: Check to copy files instead of moving them
-   - **Dry run**: Check to simulate the process without making changes (recommended first!)
-   - **Fallback to file time**: Choose whether to use file creation or modification time when EXIF data is unavailable
-3. **Run**: Click "Run Media Sorter" to start
-4. **View Output**: Expand the output section to see real-time progress and results
+**Organize your media:**
+```bash
+# Preview changes (recommended first!)
+python3 src/media_sorter.py /path/to/photos /path/to/organized --dry-run
 
-#### Media Searcher Tab
+# Actually organize them
+python3 src/media_sorter.py /path/to/photos /path/to/organized
+```
 
-The Media Searcher tab provides a graphical interface for finding media files:
+**Search for files:**
+```bash
+# Find all photos from 2023 and open the folders
+python3 src/media_searcher.py /path/to/organized --year 2023 --open-dirs
+```
 
-1. **Select Directory**: Use the "Browse" button to select the directory to search in
-2. **Apply Filters** (all optional):
-   - **Year**: Enter a single year (e.g., `2022`) or year range (e.g., `2020-2023`)
-   - **Month**: Enter a single month (e.g., `1`) or month range (e.g., `3-6`)
-   - **Keywords**: Enter space-separated keywords to search for
-   - **Keyword Match**: Choose "Any" to find files matching any keyword, or "All" to require all keywords
-   - **Rating Filters**: Choose from:
-     - No rating filter
-     - Specific rating/range (e.g., `4` or `3-5`)
-     - Rejected files (rating of -1)
-     - Picked files (rating of 0-5)
-3. **Choose Options**:
-   - **Open directories**: Check to automatically open directories containing matched files
-4. **Search**: Click "Run Media Searcher" to start
-5. **View Results**: Expand the output section to see matched files
+For more examples, see the [Quick Reference Guide](docs/QUICK_REFERENCE.md).
 
-### Advantages of the GUI
+---
 
-*   **Ease of Use**: No need to remember command-line syntax
-*   **Visual Feedback**: See exactly what options are selected
-*   **Error Prevention**: Form validation helps prevent common mistakes
-*   **Progress Monitoring**: Watch operations in real-time with live output
-*   **File Browser Integration**: Built-in directory browser eliminates typing file paths
+## Tools
+
+### Media Sorter
+
+Automatically organizes photos and videos into a clean folder structure based on creation date.
+
+**What it does:**
+- Reads EXIF metadata to get creation dates
+- Creates YYYY/MM folder structure (e.g., `2023/10`)
+- Moves or copies files to organized folders
+- Handles filename conflicts automatically
+
+**Key Features:**
+- ✓ Dry run mode to preview changes
+- ✓ Copy mode to preserve originals
+- ✓ Fallback to file dates when EXIF unavailable
+- ✓ Fast batch processing (1000+ files in seconds)
+
+**Basic Usage:**
+```bash
+python3 src/media_sorter.py SOURCE DESTINATION [options]
+```
+
+**Common Options:**
+- `--dry-run` - Preview without making changes
+- `--copy` - Copy instead of move
+- `--fallback-to-file-time modified` - Use file dates as fallback
+- `--help` - Show all options
+
+**Example Output Structure:**
+```
+Organized/
+├── 2022/
+│   ├── 01/
+│   ├── 02/
+│   └── ...
+├── 2023/
+│   ├── 01/
+│   └── ...
+```
+
+See [Quick Reference](docs/QUICK_REFERENCE.md) for more examples.
+
+---
+
+### Media Searcher
+
+Find media files in your organized library using flexible filters.
+
+**Search by:**
+- Year and month (single values or ranges)
+- Keywords in filenames or EXIF metadata
+- Star ratings (0-5) or rejected files (-1)
+- Any combination of the above
+
+**Key Features:**
+- ✓ Fast searches with smart directory skipping
+- ✓ Case-insensitive keyword matching
+- ✓ Auto-open folders with results
+- ✓ Multiple keyword modes (any/all)
+
+**Basic Usage:**
+```bash
+python3 src/media_searcher.py DIRECTORY [options]
+```
+
+**Common Options:**
+- `--year 2023` or `--year 2021-2023` - Filter by year
+- `--month 6` or `--month 6-8` - Filter by month
+- `--keyword vacation` - Search by keyword
+- `--rating 4-5` - Filter by rating
+- `--open-dirs` - Auto-open result folders
+- `--help` - Show all options
+
+**Example Searches:**
+```bash
+# Summer vacation photos from 2023
+python3 src/media_searcher.py /organized --year 2023 --month 6-8 --keyword vacation
+
+# High-rated photos
+python3 src/media_searcher.py /organized --rating 4-5 --open-dirs
+
+# All rejected files
+python3 src/media_searcher.py /organized --rejected
+```
+
+See [Quick Reference](docs/QUICK_REFERENCE.md) for more examples.
+
+---
+
+### GUI Application
+
+User-friendly graphical interface for users who prefer not to use the command line.
+
+**Features:**
+- Tabbed interface for Sorter and Searcher
+- Browse buttons for easy directory selection
+- Real-time progress display
+- All CLI features available visually
+- Cross-platform (Windows, macOS, Linux)
+
+**Launch:**
+```bash
+python3 run_gui.py
+```
+
+**Tabs:**
+
+**Media Sorter Tab:**
+1. Select source and destination directories
+2. Choose options (copy, dry-run, fallback)
+3. Click "Run Media Sorter"
+4. View live progress
+
+**Media Searcher Tab:**
+1. Select search directory
+2. Set filters (year, month, keywords, rating)
+3. Click "Run Media Searcher"
+4. View results and optionally open folders
+
+---
 
 ## Troubleshooting
 
-### "ExifTool not installed" or "exiftool is not installed or not in your PATH"
+### ExifTool Not Found
 
-ExifTool is required for both scripts to work. Install it from https://exiftool.org/ and make sure it's accessible from the command line. Test by running `exiftool -ver` in your terminal.
+**Problem:** `exiftool is not installed or not in your PATH`
 
-### "Could not determine creation date"
+**Solution:** Install ExifTool from [exiftool.org](https://exiftool.org/) and verify:
+```bash
+exiftool -ver
+```
 
-This means ExifTool could not read the creation date from the file. This can happen if:
-- The file is not a media file (photos/videos)
-- The file does not have EXIF metadata
+---
 
-**Solution**: Use the `--fallback-to-file-time` option to use the file's creation or modification time instead.
+### Could Not Determine Creation Date
 
-### No files found when searching
+**Problem:** `Could not determine creation date for file`
 
-Make sure:
-- You're searching in the correct directory
-- Your filters aren't too restrictive
-- The directory structure follows the YYYY/MM format created by the sorter
-- Hidden files (starting with `.`) are excluded from searches
+**Cause:** File has no EXIF metadata
 
-### GUI doesn't start
+**Solution:** Use fallback to file dates:
+```bash
+python3 src/media_sorter.py SOURCE DEST --fallback-to-file-time modified
+```
 
-Make sure you have Python 3 installed with tkinter support. On some Linux systems, you may need to install it separately:
+---
 
+### GUI Won't Start
+
+**Problem:** GUI doesn't launch
+
+**Solution:** Install tkinter for your system:
 ```bash
 # Ubuntu/Debian
 sudo apt-get install python3-tk
 
 # Fedora
 sudo dnf install python3-tkinter
+
+# macOS (usually pre-installed with Python)
+# Windows (included with official Python installer)
 ```
 
-## Performance Tips
+---
 
-- **Media Sorter**: The script is optimized to process large libraries efficiently. Expect to process 1000+ files in just a few seconds.
-- **Media Searcher**: Use year and month filters to narrow down searches faster. The script automatically skips irrelevant directories.
-- **First Run**: Always use `--dry-run` first to preview changes before actually moving files.
+### No Search Results
 
-## Project Structure
+**Problem:** Searcher finds no files
 
-See [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md) for details about how the project is organized.
+**Check:**
+- Correct directory path
+- Directory structure is YYYY/MM format
+- Filters aren't too restrictive
+- Files aren't hidden (starting with `.`)
+
+---
+
+## Additional Resources
+
+- **[Quick Reference Guide](docs/QUICK_REFERENCE.md)** - Common commands and examples
+- **[Project Structure](docs/PROJECT_STRUCTURE.md)** - How the project is organized
+- **[Changelog](CHANGELOG.md)** - Version history and changes
+
+---
 
 ## License
 
-This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **GNU General Public License v3.0** or later.
 
-Copyright (C) 2025  Shiue-Lang Chin
+Copyright (C) 2025 Shiue-Lang Chin
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
-## Additional Information
+See the [LICENSE](LICENSE) file for full details.
 
-**Version:** 1.0.0
+---
+
+## Version
+
+**Current Version:** 1.0.0
 **Author:** Shiue-Lang Chin
+**Repository:** https://github.com/shoeliechin/illuminate-media-organizer
 
-For more details about the scripts or to report issues, see the project repository.
+For bug reports and feature requests, please open an issue on GitHub.

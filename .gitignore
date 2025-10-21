@@ -40,9 +40,15 @@ Image-ExifTool-13.39
 *_media
 .claude
 
+# Development-only documentation (exclude from public distribution)
+docs/OPTIMIZATION_SUMMARY.md
+docs/MEDIUM_PRIORITY_OPTIMIZATIONS.md
+docs/PRE_RELEASE_CHECKLIST.md
+
 # Logs
 *.log
 
 # Test files
+tests
 test_*/
 temp/
