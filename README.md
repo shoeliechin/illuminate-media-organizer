@@ -296,6 +296,5 @@ See the [LICENSE](LICENSE) file for full details.
 
 **Current Version:** 1.0.0
 **Author:** Shiue-Lang Chin
-**Repository:** https://github.com/shoeliechin/illuminate-media-organizer
 
 For bug reports and feature requests, please open an issue on GitHub.
