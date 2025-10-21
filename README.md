@@ -120,6 +120,7 @@ python3 src/media_sorter.py SOURCE DESTINATION [options]
 - `--dry-run` - Preview without making changes
 - `--copy` - Copy instead of move
 - `--fallback-to-file-time modified` - Use file dates as fallback
+- `--open-dest` - Open destination directory when complete
 - `--help` - Show all options
 
 **Example Output Structure:**

@@ -43,6 +43,7 @@ python3 src/media_searcher.py /path/to/sorted --year 2023 --open-dirs
 | `--dry-run` | Preview without making changes |
 | `--fallback-to-file-time created` | Use file creation time if no EXIF |
 | `--fallback-to-file-time modified` | Use file modified time if no EXIF |
+| `--open-dest` | Open destination directory when complete |
 
 ### Media Searcher
 

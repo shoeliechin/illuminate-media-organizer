@@ -30,11 +30,11 @@ MAX_SKIPPED_FILES_TO_SHOW = 10  # Maximum number of skipped files to display in 
 
 # Handle imports whether run as module or script
 try:
-    from media_utils import is_exiftool_installed, get_creation_dates_batch, confirm_move_operation_cli, is_media_file
+    from media_utils import is_exiftool_installed, get_creation_dates_batch, confirm_move_operation_cli, is_media_file, open_directory
     from __version__ import __version__
     from logger_config import setup_logger, get_default_log_path
 except ImportError:
-    from src.media_utils import is_exiftool_installed, get_creation_dates_batch, confirm_move_operation_cli, is_media_file
+    from src.media_utils import is_exiftool_installed, get_creation_dates_batch, confirm_move_operation_cli, is_media_file, open_directory
     from src.__version__ import __version__
     from src.logger_config import setup_logger, get_default_log_path
 
@@ -48,7 +48,8 @@ def sort_media_files(
     copy_files: bool = False,
     dry_run: bool = False,
     fallback_to_file_time: Optional[str] = None,
-    skip_confirmation: bool = False
+    skip_confirmation: bool = False,
+    open_dest: bool = False
 ) -> None:
     """
     Sorts media files from a source directory to a destination directory
@@ -64,6 +65,7 @@ def sort_media_files(
         dry_run: If True, simulate without making changes
         fallback_to_file_time: Use file time if EXIF unavailable ('created' or 'modified')
         skip_confirmation: If True, skip move confirmation (for GUI use)
+        open_dest: If True, open destination directory after completion
     """
     logger.info(f"Starting media sorter: {source_dir} -> {dest_dir}")
     logger.info(f"Options: copy={copy_files}, dry_run={dry_run}, fallback={fallback_to_file_time}")
@@ -196,6 +198,12 @@ def sort_media_files(
         if len(skipped_files) > MAX_SKIPPED_FILES_TO_SHOW:
             print(f"  ... and {len(skipped_files) - MAX_SKIPPED_FILES_TO_SHOW} more")
 
+    # Open destination directory if requested
+    if open_dest and not dry_run:
+        logger.info(f"Opening destination directory: {dest_dir}")
+        print(f"\nOpening destination directory: {dest_dir}")
+        open_directory(dest_dir)
+
 
 def main() -> None:
     """Main entry point for the media sorter command-line interface."""
@@ -209,6 +217,7 @@ def main() -> None:
     parser.add_argument('--dry-run', action='store_true', help='Simulate the process without moving/copying files.')
     parser.add_argument('--fallback-to-file-time', type=str, choices=['created', 'modified'], help='Use file creation or modification time if EXIF data is not available.')
     parser.add_argument('-y', '--yes', action='store_true', help='Automatically confirm move operation without prompting (non-interactive mode).')
+    parser.add_argument('--open-dest', action='store_true', help='Open the destination directory after sorting is complete.')
     parser.add_argument('--log', type=str, metavar='FILE', help='Enable logging to specified file (default: platform-specific location)')
     parser.add_argument('--log-level', type=str, choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'], default='INFO', help='Set logging level (default: INFO)')
     parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
@@ -227,7 +236,7 @@ def main() -> None:
 
     # If --yes flag is provided, skip confirmation
     skip_confirmation = args.yes
-    sort_media_files(args.source_dir, args.dest_dir, args.copy, args.dry_run, args.fallback_to_file_time, skip_confirmation)
+    sort_media_files(args.source_dir, args.dest_dir, args.copy, args.dry_run, args.fallback_to_file_time, skip_confirmation, args.open_dest)
     print()
 
 

@@ -130,10 +130,13 @@ class MediaOrganizerGUI:
         self.dry_run_var = tk.BooleanVar(value=True)  # Default to checked
         ttk.Checkbutton(options_frame, text="Dry run (simulate without changes)", variable=self.dry_run_var).grid(row=1, column=0, sticky='w', pady=2)
 
-        ttk.Label(options_frame, text="Fallback to file time:").grid(row=2, column=0, sticky='w', pady=(10, 5))
+        self.open_dest_var = tk.BooleanVar(value=True)  # Default to checked
+        ttk.Checkbutton(options_frame, text="Open destination directory when complete", variable=self.open_dest_var).grid(row=2, column=0, sticky='w', pady=2)
+
+        ttk.Label(options_frame, text="Fallback to file time:").grid(row=3, column=0, sticky='w', pady=(10, 5))
         self.fallback_var = tk.StringVar(value="none")
         fallback_frame = ttk.Frame(options_frame)
-        fallback_frame.grid(row=3, column=0, sticky='ew', pady=2)
+        fallback_frame.grid(row=4, column=0, sticky='ew', pady=2)
         ttk.Radiobutton(fallback_frame, text="None", variable=self.fallback_var, value="none").pack(side='left')
         ttk.Radiobutton(fallback_frame, text="Created", variable=self.fallback_var, value="created").pack(side='left', padx=(15, 0))
         ttk.Radiobutton(fallback_frame, text="Modified", variable=self.fallback_var, value="modified").pack(side='left', padx=(15, 0))
@@ -530,6 +533,8 @@ class MediaOrganizerGUI:
             command.append("--dry-run")
         if self.fallback_var.get() != "none":
             command.extend(["--fallback-to-file-time", self.fallback_var.get()])
+        if self.open_dest_var.get():
+            command.append("--open-dest")
 
         # If user confirmed move operation via GUI, pass --yes flag to skip CLI prompt
         if is_move_mode:
