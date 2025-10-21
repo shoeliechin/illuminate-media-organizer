@@ -25,6 +25,15 @@ import subprocess
 import sys
 import os
 
+# GUI Constants
+DEFAULT_WINDOW_WIDTH = 750
+DEFAULT_WINDOW_HEIGHT = 850
+MIN_WINDOW_WIDTH = 700
+MIN_WINDOW_HEIGHT = 800
+SORTER_OUTPUT_HEIGHT = 12  # Lines of text in sorter output
+SEARCHER_OUTPUT_HEIGHT = 10  # Lines of text in searcher output
+MAX_STATUS_LINE_LENGTH = 80  # Maximum characters to display in status line
+
 # Handle imports whether run as module or script
 try:
     from media_utils import is_exiftool_installed, get_pictures_directory, get_move_warning_message
@@ -37,8 +46,8 @@ class MediaOrganizerGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Illuminate Media Organizer")
-        self.root.geometry("750x850")
-        self.root.minsize(700, 800)  # Set minimum window size to accommodate all options
+        self.root.geometry(f"{DEFAULT_WINDOW_WIDTH}x{DEFAULT_WINDOW_HEIGHT}")
+        self.root.minsize(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT)
 
         # Track running processes
         self.process_running = False
@@ -172,7 +181,7 @@ class MediaOrganizerGUI:
 
         # Output container (initially hidden)
         self.sorter_output_container = ttk.Frame(output_frame, padding=5)
-        self.sorter_output = scrolledtext.ScrolledText(self.sorter_output_container, height=12, wrap=tk.WORD)
+        self.sorter_output = scrolledtext.ScrolledText(self.sorter_output_container, height=SORTER_OUTPUT_HEIGHT, wrap=tk.WORD)
         self.sorter_output.pack(fill='both', expand=True)
 
     def setup_searcher_tab(self):
@@ -295,7 +304,7 @@ class MediaOrganizerGUI:
 
         # Output container (initially hidden)
         self.searcher_output_container = ttk.Frame(output_frame, padding=5)
-        self.searcher_output = scrolledtext.ScrolledText(self.searcher_output_container, height=10, wrap=tk.WORD)
+        self.searcher_output = scrolledtext.ScrolledText(self.searcher_output_container, height=SEARCHER_OUTPUT_HEIGHT, wrap=tk.WORD)
         self.searcher_output.pack(fill='both', expand=True)
 
     def toggle_output(self, tab):
@@ -395,7 +404,9 @@ class MediaOrganizerGUI:
                 if self.current_process:
                     try:
                         self.current_process.terminate()
-                    except:
+                    except (ProcessLookupError, OSError):
+                        # ProcessLookupError: Process already terminated
+                        # OSError: Other process-related errors
                         pass
                 dialog.destroy()
                 self.root.destroy()
@@ -448,8 +459,8 @@ class MediaOrganizerGUI:
                     stripped = line.strip()
                     if stripped:
                         # Truncate very long lines for status display
-                        if len(stripped) > 80:
-                            stripped = stripped[:77] + "..."
+                        if len(stripped) > MAX_STATUS_LINE_LENGTH:
+                            stripped = stripped[:MAX_STATUS_LINE_LENGTH-3] + "..."
                         status_text_var.set(stripped)
 
                 process.wait()

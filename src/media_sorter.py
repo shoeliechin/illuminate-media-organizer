@@ -21,18 +21,35 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os
 import shutil
 import argparse
+import logging
 from datetime import datetime
+from typing import Optional
+
+# Constants
+MAX_SKIPPED_FILES_TO_SHOW = 10  # Maximum number of skipped files to display in output
 
 # Handle imports whether run as module or script
 try:
-    from media_utils import is_exiftool_installed, get_creation_dates_batch, confirm_move_operation_cli
+    from media_utils import is_exiftool_installed, get_creation_dates_batch, confirm_move_operation_cli, is_media_file
     from __version__ import __version__
+    from logger_config import setup_logger, get_default_log_path
 except ImportError:
-    from src.media_utils import is_exiftool_installed, get_creation_dates_batch, confirm_move_operation_cli
+    from src.media_utils import is_exiftool_installed, get_creation_dates_batch, confirm_move_operation_cli, is_media_file
     from src.__version__ import __version__
+    from src.logger_config import setup_logger, get_default_log_path
+
+# Logger will be initialized in main()
+logger = logging.getLogger(__name__)
         
 
-def sort_media_files(source_dir, dest_dir, copy_files=False, dry_run=False, fallback_to_file_time=None, skip_confirmation=False):
+def sort_media_files(
+    source_dir: str,
+    dest_dir: str,
+    copy_files: bool = False,
+    dry_run: bool = False,
+    fallback_to_file_time: Optional[str] = None,
+    skip_confirmation: bool = False
+) -> None:
     """
     Sorts media files from a source directory to a destination directory
     based on their creation date. The destination directory structure
@@ -48,7 +65,11 @@ def sort_media_files(source_dir, dest_dir, copy_files=False, dry_run=False, fall
         fallback_to_file_time: Use file time if EXIF unavailable ('created' or 'modified')
         skip_confirmation: If True, skip move confirmation (for GUI use)
     """
+    logger.info(f"Starting media sorter: {source_dir} -> {dest_dir}")
+    logger.info(f"Options: copy={copy_files}, dry_run={dry_run}, fallback={fallback_to_file_time}")
+
     if not is_exiftool_installed():
+        logger.error("exiftool is not installed or not in PATH")
         print("Error: exiftool is not installed or not in your system's PATH.")
         print("Please install it from https://exiftool.org/")
         return
@@ -56,6 +77,7 @@ def sort_media_files(source_dir, dest_dir, copy_files=False, dry_run=False, fall
     # Confirm move operation if not in copy mode and not dry run
     if not copy_files and not dry_run and not skip_confirmation:
         if not confirm_move_operation_cli():
+            logger.info("User cancelled move operation")
             return
 
     print(f"\nStarting media sort from '{source_dir}' to '{dest_dir}'")
@@ -67,21 +89,35 @@ def sort_media_files(source_dir, dest_dir, copy_files=False, dry_run=False, fall
     if not dry_run:
         os.makedirs(dest_dir, exist_ok=True)
 
-    # First pass: Collect all file paths
+    # First pass: Collect all media file paths
     print("Scanning directory for media files...")
     all_file_paths = []
+    skipped_non_media = 0
     for root, _, files in os.walk(source_dir):
         for filename in files:
             # Skip hidden files
-            if not filename.startswith('.'):
-                source_path = os.path.join(root, filename)
-                all_file_paths.append(source_path)
+            if filename.startswith('.'):
+                continue
+
+            # Skip non-media files based on extension
+            if not is_media_file(filename):
+                skipped_non_media += 1
+                continue
+
+            source_path = os.path.join(root, filename)
+            all_file_paths.append(source_path)
+
+    if skipped_non_media > 0:
+        logger.info(f"Skipped {skipped_non_media} non-media files")
+        print(f"Skipped {skipped_non_media} non-media files.")
 
     if not all_file_paths:
-        print("No files found to process.")
+        logger.warning("No media files found to process")
+        print("No media files found to process.")
         return
 
-    print(f"Found {len(all_file_paths)} files to process.")
+    logger.info(f"Found {len(all_file_paths)} media files to process")
+    print(f"Found {len(all_file_paths)} media files to process.")
     print("Reading metadata (this may take a moment)...")
 
     # Batch process all files at once - MUCH faster than individual calls
@@ -143,23 +179,25 @@ def sort_media_files(source_dir, dest_dir, copy_files=False, dry_run=False, fall
                     shutil.move(source_path, target_path)
                 processed_count += 1
             except Exception as e:
+                logger.error(f"Failed to {action.lower()} {filename}: {e}")
                 print(f"  - ERROR: Could not move/copy file. {e}")
         else:
             processed_count += 1
 
+    logger.info(f"Sorting complete: {processed_count}/{len(all_file_paths)} files processed")
     print(f"\n--- Sorting complete! Processed {processed_count}/{len(all_file_paths)} files ---")
     if dry_run:
         print("--- DRY RUN MODE: No changes were made. ---")
 
     if skipped_files:
         print(f"\n{len(skipped_files)} file(s) were skipped because their creation date could not be determined:")
-        for filename in skipped_files[:10]:  # Show first 10
+        for filename in skipped_files[:MAX_SKIPPED_FILES_TO_SHOW]:
             print(f"  - {filename}")
-        if len(skipped_files) > 10:
-            print(f"  ... and {len(skipped_files) - 10} more")
+        if len(skipped_files) > MAX_SKIPPED_FILES_TO_SHOW:
+            print(f"  ... and {len(skipped_files) - MAX_SKIPPED_FILES_TO_SHOW} more")
 
 
-def main():
+def main() -> None:
     """Main entry point for the media sorter command-line interface."""
     parser = argparse.ArgumentParser(
         description="Sort media files using exiftool.",
@@ -171,9 +209,21 @@ def main():
     parser.add_argument('--dry-run', action='store_true', help='Simulate the process without moving/copying files.')
     parser.add_argument('--fallback-to-file-time', type=str, choices=['created', 'modified'], help='Use file creation or modification time if EXIF data is not available.')
     parser.add_argument('-y', '--yes', action='store_true', help='Automatically confirm move operation without prompting (non-interactive mode).')
+    parser.add_argument('--log', type=str, metavar='FILE', help='Enable logging to specified file (default: platform-specific location)')
+    parser.add_argument('--log-level', type=str, choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'], default='INFO', help='Set logging level (default: INFO)')
     parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
 
     args = parser.parse_args()
+
+    # Setup logging
+    log_level = getattr(logging, args.log_level)
+    if args.log == '':
+        # --log with no argument uses default path
+        log_file = get_default_log_path()
+    else:
+        log_file = args.log
+
+    setup_logger(__name__, log_file=log_file, level=log_level, console=False)
 
     # If --yes flag is provided, skip confirmation
     skip_confirmation = args.yes

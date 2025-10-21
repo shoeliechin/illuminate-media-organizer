@@ -22,16 +22,17 @@ import os
 import argparse
 import sys
 import subprocess
+from typing import Optional, List
 
 # Handle imports whether run as module or script
 try:
-    from media_utils import open_directory, parse_range
+    from media_utils import open_directory, parse_range, is_media_file
     from __version__ import __version__
 except ImportError:
-    from src.media_utils import open_directory, parse_range
+    from src.media_utils import open_directory, parse_range, is_media_file
     from src.__version__ import __version__
 
-def validate_rating(value):
+def validate_rating(value: str) -> int:
     """Validates that a rating value is an integer between -1 and 5."""
     try:
         rating = int(value)
@@ -42,7 +43,15 @@ def validate_rating(value):
     except ValueError:
         raise argparse.ArgumentTypeError(f"Invalid rating value: {value}")
 
-def search_media(search_dir, year_str=None, month_str=None, keywords=None, keyword_match='any', rating_str=None, open_dirs=False):
+def search_media(
+    search_dir: str,
+    year_str: Optional[str] = None,
+    month_str: Optional[str] = None,
+    keywords: Optional[List[str]] = None,
+    keyword_match: str = 'any',
+    rating_str: Optional[str] = None,
+    open_dirs: bool = False
+) -> None:
     """
     Searches for media files in a directory structure based on year, month, keywords (in path and metadata), and rating.
     The keyword search is case-insensitive.
@@ -101,8 +110,14 @@ def search_media(search_dir, year_str=None, month_str=None, keywords=None, keywo
 
         for filename in files:
             # Skip hidden files (files starting with .)
-            if not filename.startswith('.'):
-                preliminary_files.append(os.path.join(root, filename))
+            if filename.startswith('.'):
+                continue
+
+            # Skip non-media files based on extension
+            if not is_media_file(filename):
+                continue
+
+            preliminary_files.append(os.path.join(root, filename))
 
     if skipped_dirs > 0:
         print(f"Skipped {skipped_dirs} directories based on year/month filters.")
@@ -172,7 +187,7 @@ def search_media(search_dir, year_str=None, month_str=None, keywords=None, keywo
         print("No files found matching the criteria.")
 
 
-def main():
+def main() -> None:
     """Main entry point for the media searcher command-line interface."""
     parser = argparse.ArgumentParser(
         description="Search for media files in a sorted directory.",

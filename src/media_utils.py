@@ -23,10 +23,37 @@ import subprocess
 import sys
 import os
 from datetime import datetime
+from typing import Optional, Dict, List, Set, Iterator, Tuple
 import json
 
 
-def is_exiftool_installed():
+# Supported media file extensions (case-insensitive)
+MEDIA_EXTENSIONS: Set[str] = {
+    # Images
+    '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.tif', '.webp',
+    '.heic', '.heif', '.raw', '.cr2', '.nef', '.arw', '.dng', '.orf',
+    '.rw2', '.pef', '.srw', '.raf', '.crw', '.cr3',
+    # Videos
+    '.mp4', '.mov', '.avi', '.mkv', '.wmv', '.flv', '.webm', '.m4v',
+    '.mpg', '.mpeg', '.3gp', '.mts', '.m2ts', '.vob', '.ogv', '.mxf'
+}
+
+
+def is_media_file(filename: str) -> bool:
+    """
+    Check if a file is a supported media file based on its extension.
+
+    Args:
+        filename: Name of the file (can be full path or just filename)
+
+    Returns:
+        True if the file has a supported media extension, False otherwise
+    """
+    _, ext = os.path.splitext(filename)
+    return ext.lower() in MEDIA_EXTENSIONS
+
+
+def is_exiftool_installed() -> bool:
     """Check if exiftool is installed and available in the system's PATH."""
     try:
         subprocess.run(['exiftool', '-ver'], check=True, capture_output=True, text=True)
@@ -35,7 +62,7 @@ def is_exiftool_installed():
         return False
 
 
-def get_pictures_directory():
+def get_pictures_directory() -> str:
     """Get the user's Pictures directory across different platforms."""
     try:
         if sys.platform == 'win32':
@@ -49,7 +76,10 @@ def get_pictures_directory():
                 winreg.CloseKey(key)
                 if os.path.exists(pictures_path):
                     return pictures_path
-            except:
+            except (OSError, ImportError, KeyError):
+                # OSError: Registry access failed
+                # ImportError: winreg module not available
+                # KeyError: Registry key not found
                 pass
             # Fallback to standard location
             from pathlib import Path
@@ -69,7 +99,10 @@ def get_pictures_directory():
                 pictures_path = result.stdout.strip()
                 if os.path.exists(pictures_path):
                     return pictures_path
-            except:
+            except (subprocess.CalledProcessError, FileNotFoundError, OSError):
+                # FileNotFoundError: xdg-user-dir command not found
+                # CalledProcessError: xdg-user-dir command failed
+                # OSError: Other system errors
                 pass
             # Fallback to standard location
             from pathlib import Path
@@ -88,7 +121,47 @@ def get_pictures_directory():
         return str(Path.home())
 
 
-def get_creation_dates_batch(file_paths, verbose=False):
+def scan_media_files(
+    source_dir: str,
+    chunk_size: int = 1000
+) -> Iterator[List[str]]:
+    """
+    Generator that yields media files from a directory in chunks.
+    Useful for processing very large directories without loading all paths into memory.
+
+    Args:
+        source_dir: Directory to scan for media files
+        chunk_size: Number of files to yield per chunk (default: 1000)
+
+    Yields:
+        Lists of media file paths, each list containing up to chunk_size files
+    """
+    chunk: List[str] = []
+
+    for root, _, files in os.walk(source_dir):
+        for filename in files:
+            # Skip hidden files
+            if filename.startswith('.'):
+                continue
+
+            # Skip non-media files
+            if not is_media_file(filename):
+                continue
+
+            source_path = os.path.join(root, filename)
+            chunk.append(source_path)
+
+            # Yield chunk when it reaches the specified size
+            if len(chunk) >= chunk_size:
+                yield chunk
+                chunk = []
+
+    # Yield remaining files
+    if chunk:
+        yield chunk
+
+
+def get_creation_dates_batch(file_paths: List[str], verbose: bool = False) -> Dict[str, Optional[datetime]]:
     """
     Get creation dates for multiple media files using exiftool in batch mode.
     This is much faster than calling exiftool once per file.
@@ -133,17 +206,9 @@ def get_creation_dates_batch(file_paths, verbose=False):
             for tag in date_tags:
                 if tag in metadata:
                     date_str = metadata[tag]
-                    # Handle potential timezone offsets or other suffixes
-                    if '.' in date_str:
-                        date_str = date_str.split('.')[0]
-                    if '+' in date_str:
-                        date_str = date_str.split('+')[0]
-
-                    try:
-                        creation_date = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
-                        break
-                    except ValueError:
-                        continue  # Try the next tag if parsing fails
+                    creation_date = parse_date_string(date_str)
+                    if creation_date:
+                        break  # Successfully parsed, use this date
 
             results[source_file] = creation_date
 
@@ -156,7 +221,7 @@ def get_creation_dates_batch(file_paths, verbose=False):
         return {}
 
 
-def parse_date_string(date_str):
+def parse_date_string(date_str: Optional[str]) -> Optional[datetime]:
     """
     Parse a date string from exiftool metadata.
     Handles various date formats and edge cases.
@@ -166,15 +231,45 @@ def parse_date_string(date_str):
 
     Returns:
         datetime object or None if parsing fails
+
+    Examples:
+        >>> parse_date_string('2023-10-15 14:30:45')
+        datetime(2023, 10, 15, 14, 30, 45)
+        >>> parse_date_string('2023-10-15 14:30:45.123')
+        datetime(2023, 10, 15, 14, 30, 45)
+        >>> parse_date_string('2023-10-15 14:30:45+05:00')
+        datetime(2023, 10, 15, 14, 30, 45)
+        >>> parse_date_string('2023-10-15 14:30:45-05:00')
+        datetime(2023, 10, 15, 14, 30, 45)
     """
     if not date_str:
         return None
 
-    # Handle potential timezone offsets or other suffixes
+    # Trim any leading/trailing whitespace first
+    date_str = date_str.strip()
+
+    # Handle potential subsecond precision (e.g., .123 milliseconds)
     if '.' in date_str:
         date_str = date_str.split('.')[0]
+
+    # Handle potential timezone offsets (both positive and negative)
+    # Examples: +05:00, -05:00, +0000, -0800
     if '+' in date_str:
         date_str = date_str.split('+')[0]
+    elif date_str.count('-') > 2:
+        # Date format is YYYY-MM-DD, so 2 dashes are expected
+        # If there are more than 2, the extra one(s) are likely timezone offset
+        # '2023-10-15 14:30:45-05:00' -> split on last dash after the space
+        space_idx = date_str.find(' ')
+        if space_idx > 0:
+            # Look for timezone offset after the time portion
+            time_part = date_str[space_idx+1:]
+            if '-' in time_part:
+                # Split the time portion to remove timezone
+                date_str = date_str[:space_idx+1] + time_part.split('-')[0]
+
+    # Trim any trailing whitespace again after processing
+    date_str = date_str.strip()
 
     try:
         return datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
@@ -182,7 +277,7 @@ def parse_date_string(date_str):
         return None
 
 
-def open_directory(path):
+def open_directory(path: str) -> None:
     """Opens a directory in the default file explorer, cross-platform."""
     if sys.platform == 'win32':
         os.startfile(path)
@@ -195,7 +290,7 @@ def open_directory(path):
             print(f"Error: xdg-open is not available. Could not open directory {path}")
 
 
-def parse_range(value):
+def parse_range(value: Optional[str]) -> List[int]:
     """
     Parses a range string (e.g., '2020-2023' or '3-6') into a list of integers.
 
@@ -214,7 +309,7 @@ def parse_range(value):
         return [int(value)]
 
 
-def get_move_warning_message():
+def get_move_warning_message() -> str:
     """
     Returns the warning message for move operations.
     This is shared between CLI and GUI to ensure consistency.
@@ -232,7 +327,7 @@ def get_move_warning_message():
     )
 
 
-def confirm_move_operation_cli():
+def confirm_move_operation_cli() -> bool:
     """
     Prompts the user for confirmation before performing move operations (CLI version).
     Default is Yes - pressing Enter without input confirms the operation.
