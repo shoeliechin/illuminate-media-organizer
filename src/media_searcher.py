@@ -176,7 +176,7 @@ def main():
     """Main entry point for the media searcher command-line interface."""
     parser = argparse.ArgumentParser(
         description="Search for media files in a sorted directory.",
-        epilog=f"Media Organizer v{__version__}"
+        epilog=f"Illuminate Media Organizer v{__version__}"
     )
     parser.add_argument('search_dir', type=str, help='The directory to search in.')
     parser.add_argument('--year', '-y', type=str, help='The year or year range to search for (e.g., 2022, 2020-2023).')

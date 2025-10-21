@@ -150,7 +150,7 @@ def main():
     """Main entry point for the media sorter command-line interface."""
     parser = argparse.ArgumentParser(
         description="Sort media files using exiftool.",
-        epilog=f"Media Organizer v{__version__}"
+        epilog=f"Illuminate Media Organizer v{__version__}"
     )
     parser.add_argument('source_dir', type=str, help='The source directory with media files.')
     parser.add_argument('dest_dir', type=str, help='The destination directory for sorted files.')

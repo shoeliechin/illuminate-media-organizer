@@ -1,5 +1,5 @@
 """
-Version information for Media Organizer.
+Version information for Illuminate Media Organizer.
 
 Copyright (C) 2025  Shiue-Lang Chin
 

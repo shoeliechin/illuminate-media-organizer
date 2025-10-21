@@ -1,5 +1,5 @@
 """
-Media Organizer - A tool for organizing and searching media files.
+Illuminate Media Organizer - A tool for organizing and searching media files.
 
 Copyright (C) 2025  Shiue-Lang Chin
 

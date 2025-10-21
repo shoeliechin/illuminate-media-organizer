@@ -1,4 +1,4 @@
-# Media File Sorter and Searcher
+# Illuminate Media Organizer
 
 This project helps you organize and find your photos and videos using powerful command-line tools or an easy-to-use graphical interface.
 
@@ -6,7 +6,7 @@ This project helps you organize and find your photos and videos using powerful c
 
 ## Overview
 
-The Media Organizer includes three main tools:
+Illuminate Media Organizer includes three main tools:
 
 1. **Media Sorter** (`src/media_sorter.py`) - Automatically organizes your media files into a clean YYYY/MM folder structure
 2. **Media Searcher** (`src/media_searcher.py`) - Quickly find files by date, keywords, or ratings

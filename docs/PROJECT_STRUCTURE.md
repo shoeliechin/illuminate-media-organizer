@@ -1,6 +1,6 @@
 # Project Structure
 
-This document describes the organization of the Media Organizer project.
+This document describes the organization of the Illuminate Media Organizer project.
 
 ## Directory Layout
 

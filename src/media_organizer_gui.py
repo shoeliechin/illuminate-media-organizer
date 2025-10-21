@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Media Organizer GUI - Graphical interface for sorting and searching media files.
+Illuminate Media Organizer GUI - Graphical interface for sorting and searching media files.
 
 Copyright (C) 2025  Shiue-Lang Chin
 
@@ -36,7 +36,7 @@ except ImportError:
 class MediaOrganizerGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("Media Organizer")
+        self.root.title("Illuminate Media Organizer")
         self.root.geometry("750x850")
         self.root.minsize(700, 800)  # Set minimum window size to accommodate all options
 

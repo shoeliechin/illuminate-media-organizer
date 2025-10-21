@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Shared utilities for the Media Organizer project.
+Shared utilities for the Illuminate Media Organizer project.
 Contains common functions used across sorter, searcher, and GUI.
 
 Copyright (C) 2025  Shiue-Lang Chin

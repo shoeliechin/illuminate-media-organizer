@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "media-organizer"
+name = "illuminate-media-organizer"
 version = "1.0.0"
 description = "Organize and search your media files by date, keywords, and ratings"
 authors = [
@@ -29,10 +29,10 @@ classifiers = [
 keywords = ["media", "photos", "videos", "exif", "organizer", "sorting", "search"]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/media-organizer"
-Documentation = "https://github.com/yourusername/media-organizer/blob/main/README.md"
-Repository = "https://github.com/yourusername/media-organizer"
-"Bug Tracker" = "https://github.com/yourusername/media-organizer/issues"
+Homepage = "https://github.com/yourusername/illuminate-media-organizer"
+Documentation = "https://github.com/yourusername/illuminate-media-organizer/blob/main/README.md"
+Repository = "https://github.com/yourusername/illuminate-media-organizer"
+"Bug Tracker" = "https://github.com/yourusername/illuminate-media-organizer/issues"
 
 [project.scripts]
 media-sorter = "src.media_sorter:main"

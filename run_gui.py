@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Simple launcher for the Media Organizer GUI.
+Simple launcher for the Illuminate Media Organizer GUI.
 Launches the GUI from the src/ folder.
 
 Copyright (C) 2025  Shiue-Lang Chin
