@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Automatic filename conflict resolution
   - Batch ExifTool processing for optimal performance (50-100x faster than sequential processing)
   - Interactive confirmation prompt for move operations with `--yes` flag to skip
+  - Auto-open destination directory with `--open-dest` flag
 
 - **Media Searcher**: Command-line tool to search organized media files
   - Search by year, month, or date ranges
