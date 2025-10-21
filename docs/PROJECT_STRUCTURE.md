@@ -82,11 +82,15 @@ Contains all Python source code:
 
 ### docs/ Directory
 
-All documentation files:
+Documentation files:
 
+**User Documentation** (include in public distribution):
 - **`PROJECT_STRUCTURE.md`** - This file; explains project organization
 - **`QUICK_REFERENCE.md`** - Quick start guide with common commands and examples
-- **`OPTIMIZATION_SUMMARY.md`** - Technical details about performance optimizations
+
+**Developer Documentation** (for internal use, optional for public distribution):
+- **`OPTIMIZATION_SUMMARY.md`** - Technical details about performance optimizations and implementation
+- **`MEDIUM_PRIORITY_OPTIMIZATIONS.md`** - Additional implementation details and code quality improvements
 
 ## Running Scripts
 

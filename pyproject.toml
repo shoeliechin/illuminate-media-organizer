@@ -29,10 +29,10 @@ classifiers = [
 keywords = ["media", "photos", "videos", "exif", "organizer", "sorting", "search"]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/illuminate-media-organizer"
-Documentation = "https://github.com/yourusername/illuminate-media-organizer/blob/main/README.md"
-Repository = "https://github.com/yourusername/illuminate-media-organizer"
-"Bug Tracker" = "https://github.com/yourusername/illuminate-media-organizer/issues"
+Homepage = "https://github.com/shoeliechin/illuminate-media-organizer"
+Documentation = "https://github.com/shoeliechin/illuminate-media-organizer/blob/main/README.md"
+Repository = "https://github.com/shoeliechin/illuminate-media-organizer"
+"Bug Tracker" = "https://github.com/shoeliechin/illuminate-media-organizer/issues"
 
 [project.scripts]
 media-sorter = "src.media_sorter:main"
