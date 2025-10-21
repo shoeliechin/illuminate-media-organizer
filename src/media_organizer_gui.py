@@ -27,10 +27,10 @@ import os
 
 # Handle imports whether run as module or script
 try:
-    from media_utils import is_exiftool_installed, get_pictures_directory
+    from media_utils import is_exiftool_installed, get_pictures_directory, get_move_warning_message
     from __version__ import __version__
 except ImportError:
-    from src.media_utils import is_exiftool_installed, get_pictures_directory
+    from src.media_utils import is_exiftool_installed, get_pictures_directory, get_move_warning_message
     from src.__version__ import __version__
 
 class MediaOrganizerGUI:
@@ -494,6 +494,20 @@ class MediaOrganizerGUI:
             messagebox.showerror("Error", "Please select both source and destination directories")
             return
 
+        # Check if using move mode (not copy and not dry run) and confirm
+        is_move_mode = not self.copy_var.get() and not self.dry_run_var.get()
+        if is_move_mode:
+            # Show warning dialog for move operations
+            response = messagebox.askokcancel(
+                "⚠️ WARNING: MOVE MODE",
+                get_move_warning_message() + "\n\nAre you sure you want to continue?",
+                icon='warning',
+                default='cancel'
+            )
+            if not response:
+                # User cancelled the operation
+                return
+
         # Get the path to media_sorter.py (same directory as this file)
         script_dir = os.path.dirname(os.path.abspath(__file__))
         sorter_path = os.path.join(script_dir, "media_sorter.py")
@@ -505,6 +519,10 @@ class MediaOrganizerGUI:
             command.append("--dry-run")
         if self.fallback_var.get() != "none":
             command.extend(["--fallback-to-file-time", self.fallback_var.get()])
+
+        # If user confirmed move operation via GUI, pass --yes flag to skip CLI prompt
+        if is_move_mode:
+            command.append("--yes")
 
         self.run_command_in_thread(command, self.sorter_output, self.sorter_status_text, self.sorter_status_display, self.sorter_run_button)
 

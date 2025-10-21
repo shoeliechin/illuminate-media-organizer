@@ -25,28 +25,41 @@ from datetime import datetime
 
 # Handle imports whether run as module or script
 try:
-    from media_utils import is_exiftool_installed, get_creation_dates_batch
+    from media_utils import is_exiftool_installed, get_creation_dates_batch, confirm_move_operation_cli
     from __version__ import __version__
 except ImportError:
-    from src.media_utils import is_exiftool_installed, get_creation_dates_batch
+    from src.media_utils import is_exiftool_installed, get_creation_dates_batch, confirm_move_operation_cli
     from src.__version__ import __version__
         
 
-def sort_media_files(source_dir, dest_dir, copy_files=False, dry_run=False, fallback_to_file_time=None):
+def sort_media_files(source_dir, dest_dir, copy_files=False, dry_run=False, fallback_to_file_time=None, skip_confirmation=False):
     """
     Sorts media files from a source directory to a destination directory
     based on their creation date. The destination directory structure
     will be YYYY/MM.
 
     Optimized version that batches exiftool calls for much better performance.
+
+    Args:
+        source_dir: Source directory containing media files
+        dest_dir: Destination directory for sorted files
+        copy_files: If True, copy files instead of moving them
+        dry_run: If True, simulate without making changes
+        fallback_to_file_time: Use file time if EXIF unavailable ('created' or 'modified')
+        skip_confirmation: If True, skip move confirmation (for GUI use)
     """
     if not is_exiftool_installed():
         print("Error: exiftool is not installed or not in your system's PATH.")
         print("Please install it from https://exiftool.org/")
         return
 
-    print(f"Starting media sort from '{source_dir}' to '{dest_dir}'")
-    print(f"Mode: {'Copy' if copy_files else 'Move'}")
+    # Confirm move operation if not in copy mode and not dry run
+    if not copy_files and not dry_run and not skip_confirmation:
+        if not confirm_move_operation_cli():
+            return
+
+    print(f"\nStarting media sort from '{source_dir}' to '{dest_dir}'")
+    print(f"Mode: {'Copy' if copy_files else 'Move'}\n")
     if dry_run:
         print("--- DRY RUN MODE: No files will be moved or copied. ---")
 
@@ -55,7 +68,7 @@ def sort_media_files(source_dir, dest_dir, copy_files=False, dry_run=False, fall
         os.makedirs(dest_dir, exist_ok=True)
 
     # First pass: Collect all file paths
-    print("\nScanning directory for media files...")
+    print("Scanning directory for media files...")
     all_file_paths = []
     for root, _, files in os.walk(source_dir):
         for filename in files:
@@ -157,11 +170,15 @@ def main():
     parser.add_argument('--copy', action='store_true', help='Copy files instead of moving them.')
     parser.add_argument('--dry-run', action='store_true', help='Simulate the process without moving/copying files.')
     parser.add_argument('--fallback-to-file-time', type=str, choices=['created', 'modified'], help='Use file creation or modification time if EXIF data is not available.')
+    parser.add_argument('-y', '--yes', action='store_true', help='Automatically confirm move operation without prompting (non-interactive mode).')
     parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
 
     args = parser.parse_args()
 
-    sort_media_files(args.source_dir, args.dest_dir, args.copy, args.dry_run, args.fallback_to_file_time)
+    # If --yes flag is provided, skip confirmation
+    skip_confirmation = args.yes
+    sort_media_files(args.source_dir, args.dest_dir, args.copy, args.dry_run, args.fallback_to_file_time, skip_confirmation)
+    print()
 
 
 if __name__ == '__main__':

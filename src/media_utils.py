@@ -212,3 +212,46 @@ def parse_range(value):
         return list(range(start, end + 1))
     else:
         return [int(value)]
+
+
+def get_move_warning_message():
+    """
+    Returns the warning message for move operations.
+    This is shared between CLI and GUI to ensure consistency.
+
+    Returns:
+        str: The warning message to display to users
+    """
+    return (
+        "⚠️  WARNING: MOVE MODE ⚠️\n\n"
+        "You are about to MOVE files (not copy them).\n\n"
+        "This operation will:\n"
+        "• Remove files from their original location\n"
+        "• Place them in the new organized structure\n"
+        "• This action cannot be automatically undone"
+    )
+
+
+def confirm_move_operation_cli():
+    """
+    Prompts the user for confirmation before performing move operations (CLI version).
+    Default is Yes - pressing Enter without input confirms the operation.
+
+    Returns:
+        bool: True if user confirms, False otherwise
+    """
+    print("\n" + "=" * 60)
+    print(get_move_warning_message())
+    print("=" * 60 + "\n")
+
+    while True:
+        response = input("Continue with MOVE operation? [Y/n]: ").strip().lower()
+
+        # Empty response (just pressing Enter) defaults to Yes
+        if response == '' or response in ('y', 'yes'):
+            return True
+        elif response in ('n', 'no'):
+            print("\nOperation Cancelled.\n")
+            return False
+        else:
+            print("\nPlease enter 'Y' or Enter to confirm, 'n' to cancel.")
